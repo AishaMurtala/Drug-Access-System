@@ -20,6 +20,12 @@
         header h1 {
             margin: 0;
         }
+        .location-info {
+            background-color: #34495e;
+            color: #ecf0f1;
+            padding: 10px;
+            text-align: center;
+        }
         .container {
             display: flex;
             justify-content: space-between;
@@ -84,6 +90,10 @@
         <h1>Pharmacy Locator</h1>
         <p>Find the nearest pharmacies near you with directions to visit.</p>
     </header>
+
+    <div class="location-info" id="location-info">
+        Loading your location...
+    </div>
 
     <div class="container">
         <!-- Google Map Embed -->
@@ -165,5 +175,31 @@
     <footer>
         <p>&copy; 2024 Pharmacy Locator | Designed for a Better Health</p>
     </footer>
+
+    <script>
+        // Geolocation API to get user's current location
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                const latitude = position.coords.latitude;
+                const longitude = position.coords.longitude;
+
+                // Display the location information
+                document.getElementById("location-info").innerHTML = 
+                    `Your Location: Latitude: ${latitude}, Longitude: ${longitude}`;
+
+                // Embed the map centered on user's location
+                const mapFrame = document.querySelector("#map iframe");
+                mapFrame.src = `https://www.google.com/maps/embed/v1/view?key=YOUR_GOOGLE_MAPS_EMBED_API_KEY&center=${latitude},${longitude}&zoom=14`;
+
+            }, function(error) {
+                // Handle geolocation errors
+                document.getElementById("location-info").innerHTML = 
+                    "Unable to retrieve your location.";
+            });
+        } else {
+            document.getElementById("location-info").innerHTML = 
+                "Geolocation is not supported by your browser.";
+        }
+    </script>
 </body>
 </html>
