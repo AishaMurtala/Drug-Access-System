@@ -3,45 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pharmacy Locator</title>
+    <title>Find Nearby Pharmacies in Sokoto</title>
+    <!-- Bootstrap for styling -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
     <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f0f0f0;
+        #map {
+            height: 500px;
+            width: 100%;
         }
-        header {
-            background-color: #2c3e50;
-            color: #ecf0f1;
-            padding: 15px 0;
+        .chat-box {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            max-width: 300px;
+            display: none;
+            z-index: 1000; /* Ensure it's above the map */
+        }
+        .chat-box-header {
+            background: #007bff;
+            color: white;
+            padding: 10px;
+            border-radius: 10px 10px 0 0;
             text-align: center;
         }
-        header h1 {
-            margin: 0;
+        .chat-box-body {
+            padding: 10px;
+            max-height: 200px;
+            overflow-y: auto;
         }
-        .location-info {
+        .chat-box-footer {
+            padding: 10px;
+            border-top: 1px solid #ddd;
+        }
+
+    .location-info {
             background-color: #34495e;
             color: #ecf0f1;
             padding: 10px;
             text-align: center;
         }
-        .container {
-            display: flex;
-            justify-content: space-between;
-            margin: 20px;
-        }
-        #map {
-            width: 65%;
-            height: 500px;
-            border-radius: 10px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-        }
-        .pharmacy-cards {
-            width: 30%;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
+.pharmacy-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-gap: 10px;
+	 
         }
         .card {
             background-color: #fff;
@@ -66,48 +79,42 @@
             text-decoration: none;
             font-weight: bold;
         }
-        footer {
-            text-align: center;
-            padding: 15px;
-            background-color: #34495e;
-            color: #ecf0f1;
-            margin-top: 20px;
-        }
-        /* Smooth animation */
-        .fade-in {
-            opacity: 0;
-            animation: fadeIn 2s forwards;
-        }
-        @keyframes fadeIn {
-            to {
-                opacity: 1;
-            }
+
+
+        body {
+            background-image: url('drugs-background 1.jpg');
+            background-size: cover;
         }
     </style>
 </head>
 <body>
-    <header>
-        <h1>Pharmacy Locator</h1>
-        <p>Find the nearest pharmacies near you with directions to visit.</p>
-    </header>
+    <header class="text-center">
 
-    <div class="location-info" id="location-info">
+
+        <h1>Find Nearby Pharmacies</h1>
+<div class="location-info" id="location-info">
         Loading your location...
     </div>
 
-    <div class="container">
-        <!-- Google Map Embed -->
-        <div id="map" class="fade-in">
-            <iframe
-                src="https://www.google.com/maps/embed/v1/place?q=pharmacy&key=YOUR_GOOGLE_MAPS_EMBED_API_KEY"
-                width="100%"
-                height="100%"
-                style="border: 0; border-radius: 10px;"
-                allowfullscreen>
-            </iframe>
-        </div>
+    </header><br>
+    <div class="container mt-5">
+        <div id="map"></div>
+    </div>
 
-        <!-- Pharmacy Cards -->
+    <!-- Chat Box -->
+    <div class="chat-box" id="chatBox">
+        <div class="chat-box-header">
+            Chat with Pharmacy
+        </div>
+        <div class="chat-box-body" id="chatMessages"></div>
+        <div class="chat-box-footer">
+            <input type="text" id="chatInput" class="form-control" placeholder="Type a message">
+            <button class="btn btn-primary mt-2" onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+<br>
+ <!-- Pharmacy Cards -->
         <div class="pharmacy-cards">
             <div class="card fade-in">
                 <h3>City Pharmacy</h3>
@@ -171,12 +178,152 @@
             </div>
         </div>
     </div>
-
-    <footer>
-        <p>&copy; 2024 Pharmacy Locator | Designed for a Better Health</p>
-    </footer>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
 
     <script>
+        // Initialize map with a default location (Sokoto)
+        const map = L.map('map').setView([13.0669, 5.2477], 12); // Default to Sokoto coordinates
+
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Sample pharmacy data
+        const pharmacies = [
+            {
+                name: "Pharmacy A",
+                lat: 13.066,
+                lng: 5.248,
+                address: "Sokoto City",
+                hours: "8 AM - 9 PM",
+                contact: "+234 8012345678"
+            },
+            {
+                name: "Pharmacy B",
+                lat: 13.070,
+                lng: 5.245,
+                address: "Sokoto Road",
+                hours: "24 Hours",
+                contact: "+234 8023456789"
+            },
+            {
+                name: "Pharmacy C",
+                lat: 13.065,
+                lng: 5.250,
+                address: "Near Market",
+                hours: "9 AM - 8 PM",
+                contact: "+234 8034567890"
+            }
+        ];
+
+        // Add pharmacy markers to the map and routing button
+        let pharmacyMarkers = [];
+        pharmacies.forEach(pharmacy => {
+            const marker = L.marker([pharmacy.lat, pharmacy.lng]).addTo(map);
+            marker.bindPopup(`
+                <h5>${pharmacy.name}</h5>
+                <p><b>Address:</b> ${pharmacy.address}</p>
+                <p><b>Working Hours:</b> ${pharmacy.hours}</p>
+                <p><b>Contact:</b> ${pharmacy.contact}</p>
+                <button class="btn btn-primary btn-sm" onclick="routeToPharmacy(${pharmacy.lat}, ${pharmacy.lng}, '${pharmacy.name}')">Route to Pharmacy</button>
+            `);
+            pharmacyMarkers.push(marker);
+        });
+
+        // Function to get and use the user's location
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                function (position) {
+                    const userLat = position.coords.latitude;
+                    const userLng = position.coords.longitude;
+
+                    // Center the map on the user's location
+                    map.setView([userLat, userLng], 14);
+
+                    // Add a marker for the user's location
+                    L.marker([userLat, userLng])
+                        .addTo(map)
+                        .bindPopup("You are here.")
+                        .openPopup();
+                },
+                function (error) {
+                    console.error("Geolocation error:", error.message);
+                    alert("Geolocation failed. Map will stay at the default location.");
+                },
+                {
+                    enableHighAccuracy: true,  // Ensure high accuracy
+                    timeout: 5000,             // Timeout after 5 seconds if no result
+                    maximumAge: 0              // No caching, always get a fresh location
+                }
+            );
+        } else {
+            console.warn("Geolocation is not supported by this browser.");
+        }
+
+        // Function to route to the selected pharmacy
+        function routeToPharmacy(pharmacyLat, pharmacyLng, pharmacyName) {
+            navigator.geolocation.getCurrentPosition(
+                function (position) {
+                    const userLat = position.coords.latitude;
+                    const userLng = position.coords.longitude;
+
+                    // Remove any previous routes
+                    map.eachLayer(function (layer) {
+                        if (layer instanceof L.Routing.Control) {
+                            map.removeLayer(layer);
+                        }
+                    });
+
+                    // Set up the route using Leaflet Routing Machine
+                    L.Routing.control({
+                        waypoints: [
+                            L.latLng(userLat, userLng), // User's location
+                            L.latLng(pharmacyLat, pharmacyLng) // Pharmacy location
+                        ],
+                        routeWhileDragging: true,
+                    }).addTo(map);
+
+                    // Optionally, open a chat box for the selected pharmacy
+                    openChat(pharmacyName);
+                },
+                function (error) {
+                    console.error("Geolocation error:", error.message);
+                    alert("Unable to get your location.");
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 5000,
+                    maximumAge: 0
+                }
+            );
+        }
+
+        // Chat box functionality
+        function openChat(pharmacyName) {
+            const chatBox = document.getElementById("chatBox");
+            const chatMessages = document.getElementById("chatMessages");
+            chatBox.style.display = "block";
+            chatMessages.innerHTML = `<p>Chat started with <b>${pharmacyName}</b></p>`;
+        }
+
+        function sendMessage() {
+            const chatInput = document.getElementById("chatInput");
+            const chatMessages = document.getElementById("chatMessages");
+            if (chatInput.value.trim() !== "") {
+                chatMessages.innerHTML += `<p><b>You:</b> ${chatInput.value}</p>`;
+                chatInput.value = "";
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        }
+    </script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
         // Geolocation API to get user's current location
         if ("geolocation" in navigator) {
             navigator.geolocation.getCurrentPosition(function(position) {
@@ -187,10 +334,7 @@
                 document.getElementById("location-info").innerHTML = 
                     `Your Location: Latitude: ${latitude}, Longitude: ${longitude}`;
 
-                // Embed the map centered on user's location
-                const mapFrame = document.querySelector("#map iframe");
-                mapFrame.src = `https://www.google.com/maps/embed/v1/view?key=YOUR_GOOGLE_MAPS_EMBED_API_KEY&center=${latitude},${longitude}&zoom=14`;
-
+                
             }, function(error) {
                 // Handle geolocation errors
                 document.getElementById("location-info").innerHTML = 
@@ -201,5 +345,6 @@
                 "Geolocation is not supported by your browser.";
         }
     </script>
+
 </body>
 </html>
