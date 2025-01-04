@@ -47,8 +47,6 @@
     <header>
         <h1>Drug Access System</h1>
         <p>Improving access to medications using maps and technology</p>
-        <!-- This h2 will show the welcome message -->
-        <h2 id="welcome-message"></h2>
     </header>
 
     <div class="container">
@@ -60,6 +58,9 @@
                 <a href="map.html" class="btn btn-primary btn-lg w-100">Find Nearby Pharmacies</a>
             </div>
             <div class="col-md-4">
+                <a href="med.html" class="btn btn-primary btn-lg w-100">Medication Check</a>
+            </div>
+            <div class="col-md-4">
                 <a href="order.html" class="btn btn-primary btn-lg w-100">Order Medication</a>
             </div>
         </div>
@@ -69,12 +70,6 @@
         // Check if the user is logged in, otherwise redirect to the login page
         if (!localStorage.getItem('loggedIn')) {
             window.location.href = 'login.html'; // Redirect to login page if not logged in
-        } else {
-            // If logged in, fetch the username from localStorage and display a welcome message
-            const username = localStorage.getItem('currentUser'); // Assumed username is stored as 'currentUser'
-            if (username) {
-                document.getElementById('welcome-message').innerText = `Welcome, ${username}!`;
-            }
         }
     </script>
 
