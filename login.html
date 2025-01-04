@@ -8,7 +8,7 @@
     <style>
         body {
             font-family: 'Arial', sans-serif;
-            background: #3498db;
+            background: linear-gradient(135deg, #ff7e5f, #feb47b);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -139,8 +139,14 @@
         const authContainer = document.getElementById('auth-container');
         const formTitle = document.getElementById('form-title');
         const currentPage = localStorage.getItem('currentPage') || 'login'; // Default to login page
+        const loggedIn = localStorage.getItem('loggedIn'); // Check if user is already logged in
 
-        // Initialize the page based on currentPage
+        // If user is already logged in, redirect to index.html
+        if (loggedIn === 'true') {
+            window.location.href = 'index.html';
+        }
+
+        // Initialize the page based on currentPage (Login or Signup)
         if (currentPage === 'signup') {
             showSignupForm();
         }
@@ -182,6 +188,7 @@
             submitBtn.textContent = 'Login';
             toggleLink.textContent = 'Signup';
             localStorage.setItem('currentPage', 'login');
+            errorMessage.style.display = 'none'; // Hide error message when switching
         }
 
         // Show Signup form
@@ -190,6 +197,7 @@
             submitBtn.textContent = 'Signup';
             toggleLink.textContent = 'Login';
             localStorage.setItem('currentPage', 'signup');
+            errorMessage.style.display = 'none'; // Hide error message when switching
         }
     </script>
 
