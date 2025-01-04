@@ -10,6 +10,10 @@
     <!-- Tesseract.js for OCR -->
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js/dist/tesseract.min.js"></script>
     <style>
+}
+
+
+        
         .card img {
             height: 200px;
             object-fit: cover;
@@ -25,9 +29,25 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
-        body {
-            font-family: Arial, sans-serif;
-        }
+       body {
+    position: relative;
+    margin: 0;
+    padding: 0;
+    height: 100vh; /* Ensure full height */
+}
+        body::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url('https://th.bing.com/th/id/OIF.InC5yRePPqxzrBvkjzpoQw?w=173&h=180&c=7&r=0&o=5&dpr=1.4&pid=1.7'); /* Background image URL */
+    background-size: cover; /* Cover the entire body */
+    background-position: center; /* Center the image */
+    opacity: 0.1; /* 20% opacity */
+    z-index: -1; /* Ensure the background image stays behind the content */
+}
 
         .container {
             margin-top: 30px;
