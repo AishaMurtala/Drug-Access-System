@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Symptom Analyzer</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #00796b;
+        }
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .tabs {
+            display: flex;
+            cursor: pointer;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+        }
+        .tab {
+            padding: 15px 25px;
+            border: 1px solid #ccc;
+            border-radius: 5px 5px 0 0;
+            background-color: #f1f1f1;
+            margin-right: 5px;
+            text-align: center;
+            flex: 1;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .tab.active {
+            background-color: #ffffff;
+            border-bottom: 1px solid #ffffff;
+            font-weight: bold;
+        }
+        .tab-content {
+            display: none;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 0 0 5px 5px;
+            background-color: #ffffff;
+        }
+        .tab-content.show {
+            display: block;
+        }
+        .card {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 10px;
+            background-color: #f9f9f9;
+            display: flex;
+            align-items: center;
+        }
+        .card input {
+            margin-right: 10px;
+        }
+        .card span {
+            margin-left: 10px;
+            font-size: 16px;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+            font-size: 16px;
+            margin-bottom: 20px;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        .results {
+            margin-top: 20px;
+        }
+        .results ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .results li {
+            padding: 10px 0;
+            display: flex;
+            align-items: center;
+        }
+        .results i {
+            margin-right: 10px;
+        }
+        #progress {
+            display: none;
+            margin: 20px 0;
+            font-size: 16px;
+        }
+        #progress.show {
+            display: block;
+        }
+        .btn-toggle {
+            padding: 5px 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #e9ecef;
+            cursor: pointer;
+            font-size: 14px;
+            margin-bottom: 10px;
+            transition: background-color 0.3s;
+        }
+        .btn-toggle:hover {
+            background-color: #d6d6d6;
+        }
+        .medicine-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .medicine-table th, .medicine-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .medicine-table th {
+            background-color: #007bff;
+            color: #fff;
+        }
+        .medicine-table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        .medicine-table tr:hover {
+            background-color: #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="tabs">
+            <div class="tab active" data-tab="symptoms">Symptoms</div>
+            <div class="tab" data-tab="illnesses">Illnesses</div>
+            <div class="tab" data-tab="medicines">Medicines</div>
+        </div>
+        <div id="symptoms" class="tab-content show">
+            <button id="toggle-symptoms" class="btn-toggle">Hide Symptoms</button>
+            <div id="checkbox-container"></div>
+        </div>
+        <div id="illnesses" class="tab-content">
+            <button id="toggle-illnesses" class="btn-toggle">Hide Illnesses</button>
+            <div id="illnesses-container"></div>
+        </div>
+        <div id="medicines" class="tab-content">
+            <h3>Medicines Table</h3>
+            <table class="medicine-table" id="medicine-table">
+                <thead>
+                    <tr>
+                        <th>Medicine</th>
+                        <th>Uses</th>
+                        <th>Additional Information</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Medicines will be dynamically inserted here -->
+                </tbody>
+            </table>
+        </div>
+
+       <center> <button id="analyze-button" class="btn">Analyze</button><center>
+
+        <div id="progress">
+            <i class="fas fa-spinner fa-spin"></i> Analyzing...
+        </div>
+
+        <div id="results" class="results">
+            <h3>Results</h3>
+            <div id="selected-symptoms">
+                <h4>Selected Symptoms:</h4>
+                <ul id="selected-symptoms-list"></ul>
+            </div>
+            <div id="illnesses-list">
+                <h4>Possible Illnesses:</h4>
+                <ul></ul>
+            </div>
+            <div id="medicines-list">
+                <h4>Recommended Medicines:</h4>
+                <ul></ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Example data
+        const symptoms = [
+            "Cough", "Runny Nose", "Sore Throat", "Congestion", "Fever",
+            "Muscle Pain", "Fatigue", "Itchy Eyes", "Nasal Congestion",
+            "Shortness of Breath", "Headache", "Nausea", "Indigestion",
+            "Abdominal Pain", "Joint Pain", "Swelling", "Blurred Vision",
+            "Itchy Skin", "Red, Scaly Patches on Skin", "Dry Skin", "Diarrhea",
+            "Weight Loss", "Persistent Cough", "Vision Problems"
+        ];
+
+        const medicines = {
+            "Cough": ["Cough Syrups", "Expectorants"],
+            "Runny Nose": ["Nasal Sprays", "Decongestants"],
+            "Sore Throat": ["Throat Lozenges", "Pain Relievers"],
+            "Congestion": ["Decongestants", "Steam Inhalers"],
+            "Fever": ["Antipyretics", "Hydration"],
+            "Muscle Pain": ["Pain Relievers", "Muscle Relaxants"],
+            "Fatigue": ["Energy Supplements", "Hydration"],
+            "Itchy Eyes": ["Antihistamines", "Eye Drops"],
+            "Nasal Congestion": ["Decongestants", "Nasal Sprays"],
+            "Shortness of Breath": ["Inhalers", "Oxygen Therapy"],
+            "Headache": ["Pain Relievers", "Rest"],
+            "Nausea": ["Anti-nausea Medications", "Hydration"],
+            "Indigestion": ["Antacids", "Digestive Enzymes"],
+            "Abdominal Pain": ["Pain Relievers", "Antispasmodics"],
+            "Joint Pain": ["Pain Relievers", "Anti-inflammatory Drugs"],
+            "Swelling": ["Anti-inflammatory Medications", "Compression"],
+            "Blurred Vision": ["Vision Correction Glasses", "Eye Drops"],
+            "Itchy Skin": ["Anti-itch Creams", "Antihistamines"],
+            "Red, Scaly Patches on Skin": ["Topical Steroids", "Moisturizers"],
+            "Dry Skin": ["Moisturizers", "Hydrating Creams"],
+            "Diarrhea": ["Oral Rehydration Solutions", "Anti-diarrheals"],
+            "Weight Loss": ["Nutritional Supplements", "Appetite Stimulants"],
+            "Persistent Cough": ["Cough Syrups", "Hydration"],
+            "Vision Problems": ["Corrective Lenses", "Eye Care Supplements"]
+        };
+
+        const illnesses = {
+            "Common Cold": ["Cough", "Runny Nose", "Sore Throat", "Congestion"],
+            "Flu": ["Fever", "Cough", "Sore Throat", "Muscle Pain", "Fatigue"],
+            "Allergy": ["Itchy Eyes", "Nasal Congestion"],
+            "Asthma": ["Shortness of Breath", "Wheezing", "Cough"],
+            "Sinusitis": ["Headache", "Nasal Congestion", "Facial Pain"],
+            "Gastritis": ["Abdominal Pain", "Nausea", "Indigestion"],
+            "Ulcer": ["Abdominal Pain", "Nausea", "Indigestion"],
+            "Diabetes": ["Fatigue", "Frequent Urination", "Increased Thirst"],
+            "Hypertension": ["Headache", "Shortness of Breath", "Nausea"],
+            "Arthritis": ["Joint Pain", "Swelling", "Stiffness"],
+            "Eczema": ["Itchy Skin", "Red, Scaly Patches on Skin"],
+            "Psoriasis": ["Red, Scaly Patches on Skin", "Dry Skin", "Itching"],
+            "Crohn's Disease": ["Abdominal Pain", "Diarrhea", "Weight Loss"],
+            "Ulcerative Colitis": ["Abdominal Pain", "Diarrhea", "Rectal Bleeding"],
+            "Gallstones": ["Abdominal Pain", "Nausea", "Vomiting"],
+            "Kidney Stones": ["Severe Pain", "Nausea", "Frequent Urination"],
+            "Prostatitis": ["Pelvic Pain", "Frequent Urination", "Painful Urination"],
+            "Benign Prostatic Hyperplasia": ["Frequent Urination", "Difficulty Urinating"],
+            "Psoriatic Arthritis": ["Joint Pain", "Skin Lesions", "Stiffness"],
+            "Gout": ["Joint Pain", "Swelling", "Redness"],
+            "Chronic Fatigue Syndrome": ["Fatigue", "Muscle Pain", "Sleep Disturbances"],
+            "Systemic Sclerosis": ["Skin Thickening", "Fatigue", "Joint Pain"],
+            "Viral Hepatitis": ["Jaundice", "Abdominal Pain", "Fatigue"],
+            "Bacterial Infection": ["Fever", "Chills", "Fatigue"],
+            "Q Fever": ["Fever", "Headache", "Muscle Pain"],
+            "Hantavirus Pulmonary Syndrome": ["Fever", "Muscle Aches", "Shortness of Breath"],
+            "Atypical Pneumonia": ["Cough", "Fever", "Shortness of Breath"],
+            "Cystic Fibrosis": ["Chronic Cough", "Frequent Lung Infections"],
+            "Pulmonary Hypertension": ["Shortness of Breath", "Fatigue"],
+            "Wegener's Granulomatosis": ["Sinusitis", "Kidney Problems", "Fatigue"],
+            // Add more illnesses here
+        };
+
+        // Medicine table data
+        const medicineTableData = [
+            { name: "Cough Syrups", uses: "Relieves cough", additional: "Available in various flavors" },
+            { name: "Expectorants", uses: "Helps to expel mucus", additional: "Often used for chest congestion" },
+            { name: "Nasal Sprays", uses: "Relieves nasal congestion", additional: "Can be decongestant or saline" },
+            { name: "Decongestants", uses: "Reduces nasal congestion", additional: "Available in oral or nasal spray forms" },
+            { name: "Throat Lozenges", uses: "Soothes sore throat", additional: "Contains numbing agents" },
+            { name: "Pain Relievers", uses: "Relieves pain", additional: "Includes acetaminophen and ibuprofen" },
+            { name: "Steam Inhalers", uses: "Helps to clear congestion", additional: "Can be used with medicated solutions" },
+            { name: "Antipyretics", uses: "Reduces fever", additional: "Includes acetaminophen and ibuprofen" },
+            { name: "Energy Supplements", uses: "Boosts energy levels", additional: "Includes vitamins and minerals" },
+            { name: "Antihistamines", uses: "Reduces allergic reactions", additional: "Available in oral and nasal spray forms" },
+            { name: "Oxygen Therapy", uses: "Provides supplemental oxygen", additional: "Used for respiratory conditions" },
+            { name: "Anti-nausea Medications", uses: "Reduces nausea", additional: "Includes prescription and over-the-counter options" },
+            { name: "Oral Rehydration Solutions", uses: "Rehydrates and restores electrolytes", additional: "Used for diarrhea and dehydration" },
+            { name: "Topical Steroids", uses: "Reduces inflammation", additional: "Applied directly to the skin" },
+            { name: "Moisturizers", uses: "Hydrates the skin", additional: "Includes creams and ointments" },
+            { name: "Digestive Enzymes", uses: "Aids in digestion", additional: "Helps with digestive discomfort" },
+            { name: "Anti-diarrheals", uses: "Reduces diarrhea", additional: "Includes loperamide and bismuth subsalicylate" },
+            { name: "Nutritional Supplements", uses: "Provides essential nutrients", additional: "Includes vitamins, minerals, and amino acids" },
+            { name: "Appetite Stimulants", uses: "Increases appetite", additional: "Used for weight gain" }
+        ];
+
+        function analyzeSymptoms(userSymptoms, userIllnesses) {
+            let recommendedMedicines = new Set();
+            let possibleIllnesses = new Set();
+
+            // Analyze based on selected symptoms
+            Object.keys(illnesses).forEach(illness => {
+                const illnessSymptoms = illnesses[illness];
+                if (illnessSymptoms.every(symptom => userSymptoms.includes(symptom))) {
+                    possibleIllnesses.add(illness);
+                    illnessSymptoms.forEach(symptom => {
+                        if (medicines[symptom]) {
+                            medicines[symptom].forEach(med => recommendedMedicines.add(med));
+                        }
+                    });
+                }
+            });
+
+            // Analyze based on selected illnesses
+            userIllnesses.forEach(illness => {
+                const illnessSymptoms = illnesses[illness];
+                if (illnessSymptoms) {
+                    illnessSymptoms.forEach(symptom => {
+                        if (medicines[symptom]) {
+                            medicines[symptom].forEach(med => recommendedMedicines.add(med));
+                        }
+                    });
+                }
+            });
+
+            return {
+                medicines: Array.from(recommendedMedicines),
+                possibleIllnesses: Array.from(possibleIllnesses),
+                selectedSymptoms: new Set(userSymptoms)
+            };
+        }
+
+        function displaySymptoms() {
+            const checkboxContainer = document.getElementById('checkbox-container');
+            symptoms.forEach(symptom => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <input type="checkbox" class="symptom-checkbox" value="${symptom}">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>${symptom}</span>
+                `;
+                checkboxContainer.appendChild(card);
+            });
+        }
+
+        function displayIllnesses() {
+            const illnessContainer = document.getElementById('illnesses-container');
+            Object.keys(illnesses).forEach(illness => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <input type="radio" name="illness" value="${illness}" class="illness-radio">
+                    <i class="fas fa-heartbeat"></i>
+                    <span>${illness}</span>
+                `;
+                illnessContainer.appendChild(card);
+            });
+        }
+
+        function displayMedicineTable() {
+            const tableBody = document.getElementById('medicine-table').getElementsByTagName('tbody')[0];
+            tableBody.innerHTML = '';
+            medicineTableData.forEach(med => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${med.name}</td>
+                    <td>${med.uses}</td>
+                    <td>${med.additional}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function displayPossibleIllnesses(possibleIllnesses) {
+            const illnessesList = document.getElementById('illnesses-list').querySelector('ul');
+            illnessesList.innerHTML = '';
+            if (possibleIllnesses.length > 0) {
+                possibleIllnesses.forEach(illness => {
+                    const listItem = document.createElement('li');
+                    listItem.innerHTML = `<i class="fas fa-heartbeat"></i> ${illness}`;
+                    illnessesList.appendChild(listItem);
+                });
+                document.getElementById('illnesses-list').style.display = 'block';
+            } else {
+                const noResults = document.createElement('li');
+                noResults.textContent = 'No illnesses found for the selected symptoms.';
+                illnessesList.appendChild(noResults);
+            }
+        }
+
+        function displayMedicines(medicinesList) {
+            const medicinesListElement = document.getElementById('medicines-list').querySelector('ul');
+            medicinesListElement.innerHTML = '';
+            if (medicinesList.length > 0) {
+                medicinesList.forEach(med => {
+                    const listItem = document.createElement('li');
+                    listItem.innerHTML = `<i class="fas fa-medkit"></i> ${med}`;
+                    medicinesListElement.appendChild(listItem);
+                });
+                document.getElementById('medicines-list').style.display = 'block';
+            } else {
+                const noResults = document.createElement('li');
+                noResults.textContent = 'No medicines found for the selected symptoms.';
+                medicinesListElement.appendChild(noResults);
+            }
+        }
+
+        function showTab(tabId) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('show'));
+            document.querySelector(`.tab[data-tab="${tabId}"]`).classList.add('active');
+            document.getElementById(tabId).classList.add('show');
+        }
+
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                showTab(tab.getAttribute('data-tab'));
+            });
+        });
+
+        document.getElementById('toggle-symptoms').addEventListener('click', () => {
+            const checkboxContainer = document.getElementById('checkbox-container');
+            const isHidden = checkboxContainer.style.display === 'none';
+            checkboxContainer.style.display = isHidden ? 'block' : 'none';
+            document.getElementById('toggle-symptoms').textContent = isHidden ? 'Hide Symptoms' : 'Show Symptoms';
+        });
+
+        document.getElementById('toggle-illnesses').addEventListener('click', () => {
+            const illnessContainer = document.getElementById('illnesses-container');
+            const isHidden = illnessContainer.style.display === 'none';
+            illnessContainer.style.display = isHidden ? 'block' : 'none';
+            document.getElementById('toggle-illnesses').textContent = isHidden ? 'Hide Illnesses' : 'Show Illnesses';
+        });
+
+        document.getElementById('analyze-button').addEventListener('click', () => {
+            document.getElementById('progress').classList.add('show');
+            setTimeout(() => {
+                const selectedSymptoms = Array.from(document.querySelectorAll('.symptom-checkbox:checked')).map(cb => cb.value);
+                const selectedIllnesses = Array.from(document.querySelectorAll('.illness-radio:checked')).map(rb => rb.value);
+                
+                const result = analyzeSymptoms(selectedSymptoms, selectedIllnesses);
+
+                displayPossibleIllnesses(result.possibleIllnesses);
+                displayMedicines(result.medicines);
+                
+                const selectedSymptomsList = document.getElementById('selected-symptoms-list');
+                selectedSymptomsList.innerHTML = '';
+                result.selectedSymptoms.forEach(symptom => {
+                    const listItem = document.createElement('li');
+                    listItem.innerHTML = `<i class="fas fa-symptom"></i> ${symptom}`;
+                    selectedSymptomsList.appendChild(listItem);
+                });
+
+                document.getElementById('progress').classList.remove('show');
+            }, 2000);
+        });
+
+        // Initialize UI
+        displaySymptoms();
+        displayIllnesses();
+        displayMedicineTable();
+    </script>
+</body>
+</html>
