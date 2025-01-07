@@ -548,5 +548,25 @@
         // Initialize the dashboard
         displayInventory();
     </script>
+    <script>
+        // Check if the user is logged in by checking the localStorage
+        const loggedIn = localStorage.getItem('loggedIn');
+        const logoutButton = document.getElementById('logout-btn');
+
+        // If the user is logged in, show the logout button
+        if (loggedIn === 'true') {
+            logoutButton.style.display = 'block'; // Display logout button
+        }
+
+        // Logout function to clear session and redirect to login page
+        function logout() {
+            localStorage.removeItem('loggedIn'); // Remove logged-in status from localStorage
+            localStorage.removeItem('loggedInUsername'); // Remove logged-in username from localStorage
+            window.location.href = 'login.html'; // Redirect to login page
+        }
+
+        // Add event listener to the logout button
+        logoutButton.addEventListener('click', logout);
+    </script>
 </body>
 </html>
