@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drug Inventory Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+        }
+
+        .dashboard-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            background-color: #2c3e50;
+            color: white;
+            width: 250px;
+            padding: 20px;
+            position: fixed;
+            height: 100%;
+            top: 0;
+            left: 0;
+        }
+
+        .sidebar h2 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .sidebar ul {
+            list-style: none;
+        }
+
+        .sidebar ul li {
+            margin-bottom: 15px;
+        }
+
+        .sidebar ul li a {
+            text-decoration: none;
+            color: white;
+            font-size: 18px;
+            display: block;
+            padding: 10px;
+            transition: 0.3s;
+        }
+
+        .sidebar ul li a:hover {
+            background-color: #34495e;
+        }
+
+        .content {
+            margin-left: 250px;
+            padding: 30px;
+            width: 100%;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        h3 {
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+            background-color: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        table th, table td {
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+
+        table th {
+            background-color: #3498db;
+            color: white;
+        }
+
+        table tr:nth-child(even) {
+            background-color: #ecf0f1;
+        }
+
+        button {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <h2>Admin Dashboard</h2>
+            <ul>
+                <li><a href="#" id="inventory-tab">Inventory</a></li>
+                <li><a href="#" id="orders-tab">Orders</a></li>
+                <li><a href="#" id="deliveries-tab">Deliveries</a></li>
+            </ul>
+        </aside>
+        <main class="content">
+            <section id="inventory-section" class="section">
+                <h3>Manage Inventory</h3>
+                <table id="inventory-table">
+                    <thead>
+                        <tr>
+                            <th>Drug Name</th>
+                            <th>Stock</th>
+                            <th>Price</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Inventory data will be inserted here -->
+                    </tbody>
+                </table>
+                <button id="add-inventory-btn">Add New Drug</button>
+            </section>
+            
+            <section id="orders-section" class="section" style="display:none;">
+                <h3>Manage Orders</h3>
+                <table id="orders-table">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer</th>
+                            <th>Drug</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Orders data will be inserted here -->
+                    </tbody>
+                </table>
+                <button id="add-order-btn">Create Order</button>
+            </section>
+
+            <section id="deliveries-section" class="section" style="display:none;">
+                <h3>Manage Deliveries</h3>
+                <table id="deliveries-table">
+                    <thead>
+                        <tr>
+                            <th>Delivery ID</th>
+                            <th>Order ID</th>
+                            <th>Location</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Delivery data will be inserted here -->
+                    </tbody>
+                </table>
+                <button id="add-delivery-btn">Create Delivery</button>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // Data Arrays
+        const inventoryData = [
+            { id: 1, name: "Paracetamol", stock: 120, price: 10 },
+            { id: 2, name: "Ibuprofen", stock: 80, price: 15 },
+            { id: 3, name: "Aspirin", stock: 200, price: 8 }
+        ];
+
+        const ordersData = [
+            { id: 1, customer: "John Doe", drug: "Paracetamol", status: "Pending" },
+            { id: 2, customer: "Jane Smith", drug: "Ibuprofen", status: "Shipped" }
+        ];
+
+        const deliveriesData = [
+            { id: 1, orderId: 1, location: "123 Main St", status: "In Progress" },
+            { id: 2, orderId: 2, location: "456 Oak Ave", status: "Delivered" }
+        ];
+
+        // Show inventory
+        function displayInventory() {
+            const tableBody = document.getElementById('inventory-table').querySelector('tbody');
+            tableBody.innerHTML = '';
+            inventoryData.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.name}</td>
+                    <td>${item.stock}</td>
+                    <td>$${item.price}</td>
+                    <td><button onclick="editInventory(${item.id})">Edit</button></td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Show orders
+        function displayOrders() {
+            const tableBody = document.getElementById('orders-table').querySelector('tbody');
+            tableBody.innerHTML = '';
+            ordersData.forEach(order => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${order.id}</td>
+                    <td>${order.customer}</td>
+                    <td>${order.drug}</td>
+                    <td>${order.status}</td>
+                    <td><button onclick="editOrder(${order.id})">Edit</button></td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Show deliveries
+        function displayDeliveries() {
+            const tableBody = document.getElementById('deliveries-table').querySelector('tbody');
+            tableBody.innerHTML = '';
+            deliveriesData.forEach(delivery => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${delivery.id}</td>
+                    <td>${delivery.orderId}</td>
+                    <td>${delivery.location}</td>
+                    <td>${delivery.status}</td>
+                    <td><button onclick="editDelivery(${delivery.id})">Edit</button></td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Switch Sections
+        document.getElementById('inventory-tab').addEventListener('click', () => {
+            document.getElementById('inventory-section').style.display = 'block';
+            document.getElementById('orders-section').style.display = 'none';
+            document.getElementById('deliveries-section').style.display = 'none';
+            displayInventory();
+        });
+
+        document.getElementById('orders-tab').addEventListener('click', () => {
+            document.getElementById('inventory-section').style.display = 'none';
+            document.getElementById('orders-section').style.display = 'block';
+            document.getElementById('deliveries-section').style.display = 'none';
+            displayOrders();
+        });
+
+        document.getElementById('deliveries-tab').addEventListener('click', () => {
+            document.getElementById('inventory-section').style.display = 'none';
+            document.getElementById('orders-section').style.display = 'none';
+            document.getElementById('deliveries-section').style.display = 'block';
+            displayDeliveries();
+        });
+
+        // Add inventory, order, or delivery
+        document.getElementById('add-inventory-btn').addEventListener('click', () => {
+            const newItem = { id: 4, name: "Cough Syrup", stock: 150, price: 12 };
+            inventoryData.push(newItem);
+            displayInventory();
+        });
+
+        document.getElementById('add-order-btn').addEventListener('click', () => {
+            const newOrder = { id: 3, customer: "Alice Brown", drug: "Aspirin", status: "Pending" };
+            ordersData.push(newOrder);
+            displayOrders();
+        });
+
+        document.getElementById('add-delivery-btn').addEventListener('click', () => {
+            const newDelivery = { id: 3, orderId: 3, location: "789 Birch Rd", status: "In Progress" };
+            deliveriesData.push(newDelivery);
+            displayDeliveries();
+        });
+
+        // Initialize dashboard
+        displayInventory();
+    </script>
+</body>
+</html>
