@@ -158,11 +158,6 @@
             }
         }
 
-        // Initialize the page based on currentPage (Login or Signup)
-        if (currentPage === 'signup') {
-            showSignupForm();
-        }
-
         // Handle form submit (Login or Signup)
         loginForm.addEventListener('submit', function (event) {
             event.preventDefault();
@@ -224,6 +219,24 @@
             localStorage.setItem('currentPage', 'signup');
             errorMessage.style.display = 'none'; // Hide error message when switching
         }
+
+        // Logout Functionality
+        function logout() {
+            localStorage.removeItem('loggedIn'); // Remove logged-in status
+            localStorage.removeItem('loggedInUsername'); // Remove logged-in username
+            window.location.href = 'login.html'; // Redirect to login page
+        }
+
+        // Check if the user is logged in and display a logout button if so
+        if (loggedIn === 'true') {
+            const logoutButton = document.createElement('button');
+            logoutButton.textContent = 'Logout';
+            logoutButton.classList.add('button');
+            logoutButton.style.marginTop = '20px'; // Add some space before the button
+            logoutButton.addEventListener('click', logout);
+            authContainer.appendChild(logoutButton);
+        }
+
     </script>
 
 </body>
