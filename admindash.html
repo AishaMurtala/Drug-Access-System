@@ -193,6 +193,7 @@
                 <li><a href="#" id="inventory-tab">Inventory</a></li>
                 <li><a href="#" id="orders-tab">Orders</a></li>
                 <li><a href="#" id="deliveries-tab">Deliveries</a></li>
+                <li><a href="login.html" id="deliveries-tab">LogOut</a></li>
             </ul>
         </aside>
         <main class="content">
@@ -226,11 +227,11 @@
     <div id="inventoryModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeModal('inventoryModal')">&times;</span>
-            <h4>Add New Drug</h4>
+            <h4 id="inventory-modal-title">Add New Drug</h4>
             <input type="text" id="drug-name" placeholder="Drug Name">
             <input type="number" id="drug-stock" placeholder="Stock">
             <input type="number" id="drug-price" placeholder="Price">
-            <button onclick="addInventory()">Add Drug</button>
+            <button onclick="saveInventory()">Save Drug</button>
         </div>
     </div>
 
@@ -241,11 +242,12 @@
             <h4>Create New Order</h4>
             <input type="text" id="order-customer" placeholder="Customer Name">
             <input type="text" id="order-drug" placeholder="Drug">
+            <input type="number" id="order-quantity" placeholder="Quantity">
             <select id="order-status">
                 <option value="Pending">Pending</option>
                 <option value="Shipped">Shipped</option>
             </select>
-            <button onclick="addOrder()">Create Order</button>
+            <button onclick="saveOrder()">Create Order</button>
         </div>
     </div>
 
@@ -259,24 +261,24 @@
                 <option value="In Progress">In Progress</option>
                 <option value="Delivered">Delivered</option>
             </select>
-            <button onclick="addDelivery()">Create Delivery</button>
+            <button onclick="saveDelivery()">Create Delivery</button>
         </div>
     </div>
 
     <script>
         // Data Arrays
-        const inventoryData = [
+        let inventoryData = [
             { id: 1, name: "Paracetamol", stock: 120, price: 10 },
             { id: 2, name: "Ibuprofen", stock: 80, price: 15 },
             { id: 3, name: "Aspirin", stock: 200, price: 8 }
         ];
 
-        const ordersData = [
-            { id: 1, customer: "John Doe", drug: "Paracetamol", status: "Pending" },
-            { id: 2, customer: "Jane Smith", drug: "Ibuprofen", status: "Shipped" }
+        let ordersData = [
+            { id: 1, customer: "John Doe", drug: "Paracetamol", quantity: 10, status: "Pending" },
+            { id: 2, customer: "Jane Smith", drug: "Ibuprofen", quantity: 5, status: "Shipped" }
         ];
 
-        const deliveriesData = [
+        let deliveriesData = [
             { id: 1, orderId: 1, location: "123 Main St", status: "In Progress" },
             { id: 2, orderId: 2, location: "456 Oak Ave", status: "Delivered" }
         ];
@@ -309,6 +311,7 @@
                     <h4>Order ID: ${order.id}</h4>
                     <p>Customer: ${order.customer}</p>
                     <p>Drug: ${order.drug}</p>
+                    <p>Quantity: ${order.quantity}</p>
                     <p>Status: ${order.status}</p>
                     <button onclick="editOrder(${order.id})">Edit</button>
                 `;
@@ -357,7 +360,7 @@
         });
 
         // Add Inventory Item
-        function addInventory() {
+        function saveInventory() {
             const name = document.getElementById('drug-name').value;
             const stock = document.getElementById('drug-stock').value;
             const price = document.getElementById('drug-price').value;
@@ -375,27 +378,37 @@
             }
         }
 
-        // Add Order Item
-        function addOrder() {
+        // Save Order and Update Inventory
+        function saveOrder() {
             const customer = document.getElementById('order-customer').value;
             const drug = document.getElementById('order-drug').value;
+            const quantity = document.getElementById('order-quantity').value;
             const status = document.getElementById('order-status').value;
 
-            if (customer && drug && status) {
-                const newOrder = {
-                    id: ordersData.length + 1,
-                    customer,
-                    drug,
-                    status
-                };
-                ordersData.push(newOrder);
-                displayOrders();
-                closeModal('orderModal');
+            if (customer && drug && quantity && status) {
+                // Update inventory stock
+                const drugItem = inventoryData.find(item => item.name === drug);
+                if (drugItem && drugItem.stock >= quantity) {
+                    drugItem.stock -= quantity;  // Decrease the stock based on order quantity
+                    const newOrder = {
+                        id: ordersData.length + 1,
+                        customer,
+                        drug,
+                        quantity: parseInt(quantity),
+                        status
+                    };
+                    ordersData.push(newOrder);
+                    displayOrders();
+                    displayInventory();
+                    closeModal('orderModal');
+                } else {
+                    alert("Not enough stock for this order.");
+                }
             }
         }
 
-        // Add Delivery Item
-        function addDelivery() {
+        // Save Delivery
+        function saveDelivery() {
             const location = document.getElementById('delivery-location').value;
             const status = document.getElementById('delivery-status').value;
 
@@ -414,16 +427,26 @@
 
         // Open Modal for Inventory
         document.getElementById('add-inventory-btn').addEventListener('click', () => {
+            document.getElementById('inventory-modal-title').textContent = 'Add New Drug';
+            document.getElementById('drug-name').value = '';
+            document.getElementById('drug-stock').value = '';
+            document.getElementById('drug-price').value = '';
             document.getElementById('inventoryModal').style.display = 'flex';
         });
 
         // Open Modal for Order
         document.getElementById('add-order-btn').addEventListener('click', () => {
+            document.getElementById('order-customer').value = '';
+            document.getElementById('order-drug').value = '';
+            document.getElementById('order-quantity').value = '';
+            document.getElementById('order-status').value = 'Pending';
             document.getElementById('orderModal').style.display = 'flex';
         });
 
         // Open Modal for Delivery
         document.getElementById('add-delivery-btn').addEventListener('click', () => {
+            document.getElementById('delivery-location').value = '';
+            document.getElementById('delivery-status').value = 'In Progress';
             document.getElementById('deliveryModal').style.display = 'flex';
         });
 
@@ -432,7 +455,97 @@
             document.getElementById(modalId).style.display = 'none';
         }
 
-        // Initialize dashboard
+        // Edit Inventory Item
+        function editInventory(id) {
+            const item = inventoryData.find(i => i.id === id);
+            document.getElementById('inventory-modal-title').textContent = 'Edit Drug';
+            document.getElementById('drug-name').value = item.name;
+            document.getElementById('drug-stock').value = item.stock;
+            document.getElementById('drug-price').value = item.price;
+            document.getElementById('inventoryModal').style.display = 'flex';
+
+            // Add an update button
+            const saveButton = document.querySelector('.modal-content button');
+            saveButton.textContent = 'Update Drug';
+            saveButton.setAttribute('onclick', `updateInventory(${id})`);
+        }
+
+        // Update Inventory Item
+        function updateInventory(id) {
+            const name = document.getElementById('drug-name').value;
+            const stock = document.getElementById('drug-stock').value;
+            const price = document.getElementById('drug-price').value;
+
+            const item = inventoryData.find(i => i.id === id);
+            if (name && stock && price) {
+                item.name = name;
+                item.stock = parseInt(stock);
+                item.price = parseFloat(price);
+                displayInventory();
+                closeModal('inventoryModal');
+            }
+        }
+
+        // Edit Order
+        function editOrder(id) {
+            const order = ordersData.find(o => o.id === id);
+            document.getElementById('order-customer').value = order.customer;
+            document.getElementById('order-drug').value = order.drug;
+            document.getElementById('order-quantity').value = order.quantity;
+            document.getElementById('order-status').value = order.status;
+            document.getElementById('orderModal').style.display = 'flex';
+
+            const saveButton = document.querySelector('.modal-content button');
+            saveButton.textContent = 'Update Order';
+            saveButton.setAttribute('onclick', `updateOrder(${id})`);
+        }
+
+        // Update Order
+        function updateOrder(id) {
+            const customer = document.getElementById('order-customer').value;
+            const drug = document.getElementById('order-drug').value;
+            const quantity = document.getElementById('order-quantity').value;
+            const status = document.getElementById('order-status').value;
+
+            const order = ordersData.find(o => o.id === id);
+            if (customer && drug && quantity && status) {
+                order.customer = customer;
+                order.drug = drug;
+                order.quantity = parseInt(quantity);
+                order.status = status;
+                displayOrders();
+                displayInventory();
+                closeModal('orderModal');
+            }
+        }
+
+        // Edit Delivery
+        function editDelivery(id) {
+            const delivery = deliveriesData.find(d => d.id === id);
+            document.getElementById('delivery-location').value = delivery.location;
+            document.getElementById('delivery-status').value = delivery.status;
+            document.getElementById('deliveryModal').style.display = 'flex';
+
+            const saveButton = document.querySelector('.modal-content button');
+            saveButton.textContent = 'Update Delivery';
+            saveButton.setAttribute('onclick', `updateDelivery(${id})`);
+        }
+
+        // Update Delivery
+        function updateDelivery(id) {
+            const location = document.getElementById('delivery-location').value;
+            const status = document.getElementById('delivery-status').value;
+
+            const delivery = deliveriesData.find(d => d.id === id);
+            if (location && status) {
+                delivery.location = location;
+                delivery.status = status;
+                displayDeliveries();
+                closeModal('deliveryModal');
+            }
+        }
+
+        // Initialize the dashboard
         displayInventory();
     </script>
 </body>
