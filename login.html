@@ -163,9 +163,12 @@
             if (currentPage === 'login') {
                 // Login check
                 if (localStorage.getItem(username) === password) {
-                    localStorage.setItem('loggedIn', 'true');
-                    window.location.href = 'index.html';
-                } else {
+  localStorage.setItem('loggedIn', 'true'); // Store the logged in status
+  window.location.href = 'index.html'; // Redirect to index page
+} else if (username === 'admin' && password === 'admin') {
+  localStorage.setItem('loggedIn', 'true'); // Store the logged in status
+  window.location.href = 'admindash.html';
+                else {
                     errorMessage.style.display = 'block';
                 }
             } else if (currentPage === 'signup') {
