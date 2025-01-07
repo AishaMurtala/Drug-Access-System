@@ -7,11 +7,10 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
-             background-image: url('https://image.freepik.com/free-vector/realistic-pills-background_1284-7764.jpg');
-    background-size: cover;
-    background-position: center;
-    background-color: rgba(0, 0, 0, 0.5); /* 20% opacity for background color overlay */
- 
+            background-image: url('https://image.freepik.com/free-vector/realistic-pills-background_1284-7764.jpg');
+            background-size: cover;
+            background-position: center;
+            background-color: rgba(0, 0, 0, 0.5); /* 20% opacity for background color overlay */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -163,12 +162,12 @@
             if (currentPage === 'login') {
                 // Login check
                 if (localStorage.getItem(username) === password) {
-  localStorage.setItem('loggedIn', 'true'); // Store the logged in status
-  window.location.href = 'index.html'; // Redirect to index page
-} else if (username === 'admin' && password === 'admin') {
-  localStorage.setItem('loggedIn', 'true'); // Store the logged in status
-  window.location.href = 'admindash.html';
-                else {
+                    localStorage.setItem('loggedIn', 'true'); // Store the logged in status
+                    window.location.href = 'index.html'; // Redirect to index page
+                } else if (username === 'admin' && password === 'admin') {
+                    localStorage.setItem('loggedIn', 'true'); // Store the logged in status
+                    window.location.href = 'admindash.html'; // Redirect to admin dashboard
+                } else {
                     errorMessage.style.display = 'block';
                 }
             } else if (currentPage === 'signup') {
