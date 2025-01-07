@@ -124,6 +124,65 @@
         .card button:hover {
             background-color: #2980b9;
         }
+
+        /* Modal Styling */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-content h4 {
+            margin-bottom: 15px;
+        }
+
+        .modal-content input,
+        .modal-content select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .modal-content button {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .modal-content button:hover {
+            background-color: #2980b9;
+        }
+
+        .modal .close {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 30px;
+            color: #333;
+            cursor: pointer;
+        }
+
     </style>
 </head>
 <body>
@@ -161,6 +220,47 @@
                 <button id="add-delivery-btn">Create Delivery</button>
             </section>
         </main>
+    </div>
+
+    <!-- Modal for Adding Inventory -->
+    <div id="inventoryModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('inventoryModal')">&times;</span>
+            <h4>Add New Drug</h4>
+            <input type="text" id="drug-name" placeholder="Drug Name">
+            <input type="number" id="drug-stock" placeholder="Stock">
+            <input type="number" id="drug-price" placeholder="Price">
+            <button onclick="addInventory()">Add Drug</button>
+        </div>
+    </div>
+
+    <!-- Modal for Adding Order -->
+    <div id="orderModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('orderModal')">&times;</span>
+            <h4>Create New Order</h4>
+            <input type="text" id="order-customer" placeholder="Customer Name">
+            <input type="text" id="order-drug" placeholder="Drug">
+            <select id="order-status">
+                <option value="Pending">Pending</option>
+                <option value="Shipped">Shipped</option>
+            </select>
+            <button onclick="addOrder()">Create Order</button>
+        </div>
+    </div>
+
+    <!-- Modal for Adding Delivery -->
+    <div id="deliveryModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('deliveryModal')">&times;</span>
+            <h4>Create New Delivery</h4>
+            <input type="text" id="delivery-location" placeholder="Delivery Location">
+            <select id="delivery-status">
+                <option value="In Progress">In Progress</option>
+                <option value="Delivered">Delivered</option>
+            </select>
+            <button onclick="addDelivery()">Create Delivery</button>
+        </div>
     </div>
 
     <script>
@@ -256,24 +356,81 @@
             displayDeliveries();
         });
 
-        // Add inventory, order, or delivery
+        // Add Inventory Item
+        function addInventory() {
+            const name = document.getElementById('drug-name').value;
+            const stock = document.getElementById('drug-stock').value;
+            const price = document.getElementById('drug-price').value;
+
+            if (name && stock && price) {
+                const newItem = {
+                    id: inventoryData.length + 1,
+                    name,
+                    stock: parseInt(stock),
+                    price: parseFloat(price)
+                };
+                inventoryData.push(newItem);
+                displayInventory();
+                closeModal('inventoryModal');
+            }
+        }
+
+        // Add Order Item
+        function addOrder() {
+            const customer = document.getElementById('order-customer').value;
+            const drug = document.getElementById('order-drug').value;
+            const status = document.getElementById('order-status').value;
+
+            if (customer && drug && status) {
+                const newOrder = {
+                    id: ordersData.length + 1,
+                    customer,
+                    drug,
+                    status
+                };
+                ordersData.push(newOrder);
+                displayOrders();
+                closeModal('orderModal');
+            }
+        }
+
+        // Add Delivery Item
+        function addDelivery() {
+            const location = document.getElementById('delivery-location').value;
+            const status = document.getElementById('delivery-status').value;
+
+            if (location && status) {
+                const newDelivery = {
+                    id: deliveriesData.length + 1,
+                    orderId: deliveriesData.length + 1,
+                    location,
+                    status
+                };
+                deliveriesData.push(newDelivery);
+                displayDeliveries();
+                closeModal('deliveryModal');
+            }
+        }
+
+        // Open Modal for Inventory
         document.getElementById('add-inventory-btn').addEventListener('click', () => {
-            const newItem = { id: 4, name: "Cough Syrup", stock: 150, price: 12 };
-            inventoryData.push(newItem);
-            displayInventory();
+            document.getElementById('inventoryModal').style.display = 'flex';
         });
 
+        // Open Modal for Order
         document.getElementById('add-order-btn').addEventListener('click', () => {
-            const newOrder = { id: 3, customer: "Alice Brown", drug: "Aspirin", status: "Pending" };
-            ordersData.push(newOrder);
-            displayOrders();
+            document.getElementById('orderModal').style.display = 'flex';
         });
 
+        // Open Modal for Delivery
         document.getElementById('add-delivery-btn').addEventListener('click', () => {
-            const newDelivery = { id: 3, orderId: 3, location: "789 Birch Rd", status: "In Progress" };
-            deliveriesData.push(newDelivery);
-            displayDeliveries();
+            document.getElementById('deliveryModal').style.display = 'flex';
         });
+
+        // Close Modal
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
 
         // Initialize dashboard
         displayInventory();
